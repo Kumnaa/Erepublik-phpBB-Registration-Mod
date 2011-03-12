@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<?xml-stylesheet type="text/xsl" href="modx.prosilver.en.xsl"?>
+<!--NOTICE: Please open this file in your web browser. If presented with a security warning, you may safely tell it to allow the blocked content.-->
+<!--For security purposes, please check: http://www.phpbb.com/mods/ for the latest version of this MOD.\nAlthough MODs are checked before being allowed in the MODs Database there is no guarantee that there are no security problems within the MOD.\nNo support will be given for MODs not found within the MODs Database which can be found at http://www.phpbb.com/mods/-->
+<mod xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://www.phpbb.com/mods/xml/modx-1.2.5.xsd">
+	<header>
+		<meta name="generator" content="MODX file generated with PP MODX Creator by tumba25 (online version)"/>
+		<license><![CDATA[http://opensource.org/licenses/gpl-license.php GNU General Public License v2]]></license>
+		<title lang="en"><![CDATA[CCCP Erepublik Registration]]></title>
+		<description lang="en"><![CDATA[Module that allows you to register using the erepublik API to fetch your citizens name. It users to know that the forum accounts are genuine accounts of erepublik players.]]></description>
+		<author-group>
+			<author>
+				<realname><![CDATA[Ben Bowtell]]></realname>
+				<username><![CDATA[Kumnaa]]></username>
+				<homepage><![CDATA[http://www.cccp-group.org]]></homepage>
+				<email><![CDATA[ben@apetechnologies.net]]></email>
+			</author>
+		</author-group>
+		<mod-version>1.0.0-RC1</mod-version>
+		<installation>
+			<level>easy</level>
+			<time>60</time>
+			<target-version>3.0.7</target-version>
+		</installation>
+	</header>
+	<action-group>
+		<sql><![CDATA[CREATE TABLE `phpbb_cccp_erepublik_registration` (
+  `user_type` tinyint(2) NOT NULL default '0',
+  `group_id` mediumint(8) unsigned NOT NULL default '3',
+  `user_ip` varchar(40) collate utf8_bin NOT NULL default '',
+  `user_regdate` int(11) unsigned NOT NULL default '0',
+  `user_password` varchar(40) collate utf8_bin NOT NULL default '',
+  `user_email` varchar(100) collate utf8_bin NOT NULL default '',
+  `user_inactive_reason` tinyint(2) NOT NULL default '0',
+  `user_inactive_time` int(11) unsigned NOT NULL default '0',
+  `user_lang` varchar(30) collate utf8_bin NOT NULL default '',
+  `user_timezone` decimal(5,2) NOT NULL default '0.00',
+  `user_dst` tinyint(1) unsigned NOT NULL default '0',
+  `user_actkey` varchar(32) collate utf8_bin NOT NULL default '',
+  `user_new` tinyint(3) unsigned NOT NULL default '1',
+  `timestamp` int(11) NOT NULL default '0',
+  `cccp_erep_activation` varchar(32) collate utf8_bin NOT NULL,
+  `cccp_erep_token` varchar(32) collate utf8_bin NOT NULL default '',
+  `new_password` varchar(100) collate utf8_bin NOT NULL default '',
+  KEY `cccp_erep_activation` (`cccp_erep_activation`)
+);]]></sql>
+		<sql><![CDATA[ALTER TABLE  `phpbb_users` ADD  `erepublik_id` INT NOT NULL DEFAULT  '0';]]></sql>
+		<copy>
+			<file from="root/register_erepublik.php" to="register_erepublik.php"/>
+			<file from="root/includes/cccp/cccp_register.php" to="includes/cccp/cccp_register.php"/>
+			<file from="root/includes/cccp/cccp_register_erepublik.php" to="includes/cccp/cccp_register_erepublik.php"/>
+			<file from="root/includes/cccp/erep_api.php" to="includes/cccp/erep_api.php"/>
+			<file from="root/includes/cccp/erep_api_config.php" to="includes/cccp/erep_api_config.php"/>
+			<file from="root/includes/cccp/index.htm" to="includes/cccp/index.htm"/>
+			<file from="root/language/en/mods/cccp/registration.php" to="language/en/mods/cccp/registration.php"/>
+			<file from="root/language/en/mods/cccp/index.htm" to="language/en/mods/cccp/index.htm"/>
+			<file from="root/styles/prosilver/template/cccp_register.html" to="styles/prosilver/template/cccp_register.html"/>
+			<file from="root/styles/prosilver/template/cccp_register_erepublik.html" to="styles/prosilver/template/cccp_register_erepublik.html"/>
+			<file from="root/styles/prosilver/template/cccp_register_erepublik_process.html" to="styles/prosilver/template/cccp_register_erepublik_process.html"/>
+		</copy>
+		<open src="includes\constants.php">
+			<edit>
+				<find><![CDATA[// Additional tables]]></find>
+				<action type="after-add"><![CDATA[define('CCCP_EREP_REGISTRATION_TABLE', $table_prefix . 'cccp_erepublik_registration');]]></action>
+			</edit>
+		</open>
+		<open src="ucp.php">
+			<edit>
+				<find><![CDATA[$module->load('ucp', 'register');]]></find>
+				<action type="replace-with"><![CDATA[$module->load('cccp', 'register');]]></action>
+			</edit>
+		</open>
+		<diy-instructions lang="en"><![CDATA[You will need to edit 'includes/cccp/erep_api_config.php' and add your API keys.]]></diy-instructions>
+	</action-group>
+</mod>
