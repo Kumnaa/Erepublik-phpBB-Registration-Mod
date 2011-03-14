@@ -1,20 +1,19 @@
 <?php
-/**
-*
-* hello_world [English]
-*
-* @package language
-* @version $Id: v3_modules.xml 52 2007-12-09 19:45:45Z jelly_doughnut $
-* @copyright (c) 2005 phpBB Group
-* @license http://opensource.org/licenses/gpl-license.php GNU Public License
-*
-*/
 
 /**
-* DO NOT CHANGE
-*/
-if (empty($lang) || !is_array($lang))
-{
+ *
+ * hello_world [English]
+ *
+ * @package language
+ * @version $Id: v3_modules.xml 52 2007-12-09 19:45:45Z jelly_doughnut $
+ * @copyright (c) 2005 phpBB Group
+ * @license http://opensource.org/licenses/gpl-license.php GNU Public License
+ *
+ */
+/**
+ * DO NOT CHANGE
+ */
+if (empty($lang) || !is_array($lang)) {
     $lang = array();
 }
 
@@ -36,6 +35,6 @@ $lang = array_merge($lang, array(
     'CCCP_EREP_API_ERROR' => 'There was an error with the erepublik API.',
     'EREP_LOGIN_TEXT' => 'Click here to authenticate with erepublik.',
     'CCCP_USER_ADD_ERROR' => 'There was an error adding the user. Please contact the MOD maker.',
-	'CCCP_USERNAME_EXISTS' => 'Username already exists.'
-));
+    'CCCP_USERNAME_EXISTS' => 'Username already exists.'
+        ));
 ?>

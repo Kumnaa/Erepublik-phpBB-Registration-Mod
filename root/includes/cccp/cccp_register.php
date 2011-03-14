@@ -1,72 +1,63 @@
 <?php
-/**
-*
-* @package cccp
-* @version $Id$
-* @copyright (c) 2005 phpBB Group
-* @license http://opensource.org/licenses/gpl-license.php GNU Public License
-*
-*/
 
 /**
-* @ignore
-*/
-if (!defined('IN_PHPBB'))
-{
-	exit;
+ *
+ * @package cccp
+ * @version $Id$
+ * @copyright (c) 2005 phpBB Group
+ * @license http://opensource.org/licenses/gpl-license.php GNU Public License
+ *
+ */
+/**
+ * @ignore
+ */
+if (!defined('IN_PHPBB')) {
+    exit;
 }
 
 /**
-* ucp_register
-* Board registration
-* @package ucp
-*/
-class cccp_register
-{
-	var $u_action;
+ * ucp_register
+ * Board registration
+ * @package ucp
+ */
+class cccp_register {
 
-	function main($id, $mode)
-	{
-		global $config, $db, $user, $auth, $template, $phpbb_root_path, $phpEx;
+    var $u_action;
 
-		require($phpbb_root_path . 'includes/cccp/erep_api.' . $phpEx);
-		require($phpbb_root_path . 'includes/cccp/erep_api_config.' . $phpEx);
+    function main($id, $mode) {
+        global $config, $db, $user, $auth, $template, $phpbb_root_path, $phpEx;
 
-		$user->add_lang('mods/cccp/registration');
+        require($phpbb_root_path . 'includes/cccp/erep_api.' . $phpEx);
+        require($phpbb_root_path . 'includes/cccp/erep_api_config.' . $phpEx);
 
-		$cccp_erep_registration = unique_id() . unique_id();
+        $user->add_lang('mods/cccp/registration');
 
-		if ($config['require_activation'] == USER_ACTIVATION_DISABLE)
-		{
-			trigger_error('UCP_REGISTER_DISABLE');
-		}
+        $cccp_erep_registration = unique_id() . unique_id();
 
-		include($phpbb_root_path . 'includes/functions_profile_fields.' . $phpEx);
-
-		$coppa			= (isset($_REQUEST['coppa'])) ? ((!empty($_REQUEST['coppa'])) ? 1 : 0) : false;
-		$agreed			= (!empty($_POST['agreed'])) ? 1 : 0;
-		$submit			= (isset($_POST['submit'])) ? true : false;
-		$change_lang	= request_var('change_lang', '');
-		$user_lang		= request_var('lang', $user->lang_name);
-		$cccp_erep_reg_key  = request_var('cccp_erep_registration_hash','');
-
-        if ($agreed)
-        {
-            add_form_key('ucp_register');
+        if ($config['require_activation'] == USER_ACTIVATION_DISABLE) {
+            trigger_error('UCP_REGISTER_DISABLE');
         }
-        else
-        {
+
+        include($phpbb_root_path . 'includes/functions_profile_fields.' . $phpEx);
+
+        $coppa = (isset($_REQUEST['coppa'])) ? ((!empty($_REQUEST['coppa'])) ? 1 : 0) : false;
+        $agreed = (!empty($_POST['agreed'])) ? 1 : 0;
+        $submit = (isset($_POST['submit'])) ? true : false;
+        $change_lang = request_var('change_lang', '');
+        $user_lang = request_var('lang', $user->lang_name);
+        $cccp_erep_reg_key = request_var('cccp_erep_registration_hash', '');
+
+        if ($agreed) {
+            add_form_key('ucp_register');
+        } else {
             add_form_key('ucp_register_terms');
         }
 
-        if ($change_lang || $user_lang != $config['default_lang'])
-        {
+        if ($change_lang || $user_lang != $config['default_lang']) {
             $use_lang = ($change_lang) ? basename($change_lang) : basename($user_lang);
 
-            if (file_exists($user->lang_path . $use_lang . '/'))
-            {
-                if ($change_lang)
-                {
+            if (file_exists($user->lang_path . $use_lang . '/')) {
+                if ($change_lang) {
                     $submit = false;
 
                     // Setting back agreed to let the user view the agreement in his/her language
@@ -77,9 +68,7 @@ class cccp_register
                 $user->lang = array();
                 $user->data['user_lang'] = $user->lang_name;
                 $user->add_lang(array('common', 'ucp'));
-            }
-            else
-            {
+            } else {
                 $change_lang = '';
                 $user_lang = $user->lang_name;
             }
@@ -90,26 +79,23 @@ class cccp_register
 
         $error = $cp_data = $cp_error = array();
 
-        if (!$agreed || ($coppa === false && $config['coppa_enable']) || ($coppa && !$config['coppa_enable']))
-        {
+        if (!$agreed || ($coppa === false && $config['coppa_enable']) || ($coppa && !$config['coppa_enable'])) {
             $add_lang = ($change_lang) ? '&amp;change_lang=' . urlencode($change_lang) : '';
             $add_coppa = ($coppa !== false) ? '&amp;coppa=' . $coppa : '';
 
             $s_hidden_fields = array(
-                'change_lang'    => $change_lang,
+                'change_lang' => $change_lang,
             );
 
             // If we change the language, we want to pass on some more possible parameter.
-            if ($change_lang)
-            {
+            if ($change_lang) {
                 // We do not include the password
                 $s_hidden_fields = array_merge($s_hidden_fields, array(
-                    'email'                => strtolower(request_var('email', '')),
-                    'email_confirm'        => strtolower(request_var('email_confirm', '')),
-                    'lang'                => $user->lang_name,
-                    'tz'                => request_var('tz', (float) $config['board_timezone']),
-                ));
-
+                    'email' => strtolower(request_var('email', '')),
+                    'email_confirm' => strtolower(request_var('email_confirm', '')),
+                    'lang' => $user->lang_name,
+                    'tz' => request_var('tz', (float) $config['board_timezone']),
+                        ));
             }
 
             // Checking amount of available languages
@@ -118,42 +104,35 @@ class cccp_register
             $result = $db->sql_query($sql);
 
             $lang_row = array();
-            while ($row = $db->sql_fetchrow($result))
-            {
+            while ($row = $db->sql_fetchrow($result)) {
                 $lang_row[] = $row;
             }
             $db->sql_freeresult($result);
 
-            if ($coppa === false && $config['coppa_enable'])
-            {
+            if ($coppa === false && $config['coppa_enable']) {
                 $now = getdate();
                 $coppa_birthday = $user->format_date(mktime($now['hours'] + $user->data['user_dst'], $now['minutes'], $now['seconds'], $now['mon'], $now['mday'] - 1, $now['year'] - 13), $user->lang['DATE_FORMAT']);
                 unset($now);
 
                 $template->assign_vars(array(
-                    'S_LANG_OPTIONS'    => (sizeof($lang_row) > 1) ? language_select($user_lang) : '',
-                    'L_COPPA_NO'        => sprintf($user->lang['UCP_COPPA_BEFORE'], $coppa_birthday),
-                    'L_COPPA_YES'        => sprintf($user->lang['UCP_COPPA_ON_AFTER'], $coppa_birthday),
-
-                    'U_COPPA_NO'        => append_sid("{$phpbb_root_path}ucp.$phpEx", 'mode=register&amp;coppa=0' . $add_lang),
-                    'U_COPPA_YES'        => append_sid("{$phpbb_root_path}ucp.$phpEx", 'mode=register&amp;coppa=1' . $add_lang),
-
-                    'S_SHOW_COPPA'        => true,
-                    'S_HIDDEN_FIELDS'    => build_hidden_fields($s_hidden_fields),
-                    'S_UCP_ACTION'        => append_sid("{$phpbb_root_path}ucp.$phpEx", 'mode=register' . $add_lang),
+                    'S_LANG_OPTIONS' => (sizeof($lang_row) > 1) ? language_select($user_lang) : '',
+                    'L_COPPA_NO' => sprintf($user->lang['UCP_COPPA_BEFORE'], $coppa_birthday),
+                    'L_COPPA_YES' => sprintf($user->lang['UCP_COPPA_ON_AFTER'], $coppa_birthday),
+                    'U_COPPA_NO' => append_sid("{$phpbb_root_path}ucp.$phpEx", 'mode=register&amp;coppa=0' . $add_lang),
+                    'U_COPPA_YES' => append_sid("{$phpbb_root_path}ucp.$phpEx", 'mode=register&amp;coppa=1' . $add_lang),
+                    'S_SHOW_COPPA' => true,
+                    'S_HIDDEN_FIELDS' => build_hidden_fields($s_hidden_fields),
+                    'S_UCP_ACTION' => append_sid("{$phpbb_root_path}ucp.$phpEx", 'mode=register' . $add_lang),
                 ));
-            }
-            else
-            {
+            } else {
                 $template->assign_vars(array(
-                    'S_LANG_OPTIONS'    => (sizeof($lang_row) > 1) ? language_select($user_lang) : '',
-                    'L_TERMS_OF_USE'    => sprintf($user->lang['TERMS_OF_USE_CONTENT'], $config['sitename'], generate_board_url()),
-
-                    'S_SHOW_COPPA'        => false,
-                    'S_REGISTRATION'    => true,
-                    'S_HIDDEN_FIELDS'    => build_hidden_fields($s_hidden_fields),
-                    'S_UCP_ACTION'        => append_sid("{$phpbb_root_path}ucp.$phpEx", 'mode=register' . $add_lang . $add_coppa),
-                    )
+                    'S_LANG_OPTIONS' => (sizeof($lang_row) > 1) ? language_select($user_lang) : '',
+                    'L_TERMS_OF_USE' => sprintf($user->lang['TERMS_OF_USE_CONTENT'], $config['sitename'], generate_board_url()),
+                    'S_SHOW_COPPA' => false,
+                    'S_REGISTRATION' => true,
+                    'S_HIDDEN_FIELDS' => build_hidden_fields($s_hidden_fields),
+                    'S_UCP_ACTION' => append_sid("{$phpbb_root_path}ucp.$phpEx", 'mode=register' . $add_lang . $add_coppa),
+                        )
                 );
             }
             unset($lang_row);
@@ -164,10 +143,9 @@ class cccp_register
 
 
         // The CAPTCHA kicks in here. We can't help that the information gets lost on language change.
-        if ($config['enable_confirm'])
-        {
+        if ($config['enable_confirm']) {
             include($phpbb_root_path . 'includes/captcha/captcha_factory.' . $phpEx);
-            $captcha =& phpbb_captcha_factory::get_instance($config['captcha_plugin']);
+            $captcha = & phpbb_captcha_factory::get_instance($config['captcha_plugin']);
             $captcha->init(CONFIRM_REG);
         }
 
@@ -175,248 +153,222 @@ class cccp_register
         $timezone = date('Z') / 3600;
         $is_dst = date('I');
 
-        if ($config['board_timezone'] == $timezone || $config['board_timezone'] == ($timezone - 1))
-        {
+        if ($config['board_timezone'] == $timezone || $config['board_timezone'] == ($timezone - 1)) {
             $timezone = ($is_dst) ? $timezone - 1 : $timezone;
 
-            if (!isset($user->lang['tz_zones'][(string) $timezone]))
-            {
+            if (!isset($user->lang['tz_zones'][(string) $timezone])) {
                 $timezone = $config['board_timezone'];
             }
-        }
-        else
-        {
+        } else {
             $is_dst = $config['board_dst'];
             $timezone = $config['board_timezone'];
         }
 
         $data = array(
-            'new_password'        => request_var('new_password', '', true),
-            'password_confirm'    => request_var('password_confirm', '', true),
-            'email'                => strtolower(request_var('email', '')),
-            'email_confirm'        => strtolower(request_var('email_confirm', '')),
-            'lang'                => basename(request_var('lang', $user->lang_name)),
-            'tz'                => request_var('tz', (float) $timezone),
+            'new_password' => request_var('new_password', '', true),
+            'password_confirm' => request_var('password_confirm', '', true),
+            'email' => strtolower(request_var('email', '')),
+            'email_confirm' => strtolower(request_var('email_confirm', '')),
+            'lang' => basename(request_var('lang', $user->lang_name)),
+            'tz' => request_var('tz', (float) $timezone),
         );
 
         // Check and initialize some variables if needed
-        if ($submit)
-        {
-                    $error = validate_data($data, array(
-                            'new_password' => array(
-                                    array('string', false, $config['min_pass_chars'], $config['max_pass_chars']),
-                                    array('password')),
-                            'password_confirm'    => array('string', false, $config['min_pass_chars'], $config['max_pass_chars']),
-                            'email'                => array(
-                                    array('string', false, 6, 60),
-                                    array('email')),
-                            'email_confirm'        => array('string', false, 6, 60),
-                            'tz'                => array('num', false, -14, 14),
-                            'lang'                => array('match', false, '#^[a-z_\-]{2,}$#i'),
+        if ($submit) {
+            $error = validate_data($data, array(
+                'new_password' => array(
+                    array('string', false, $config['min_pass_chars'], $config['max_pass_chars']),
+                    array('password')),
+                'password_confirm' => array('string', false, $config['min_pass_chars'], $config['max_pass_chars']),
+                'email' => array(
+                    array('string', false, 6, 60),
+                    array('email')),
+                'email_confirm' => array('string', false, 6, 60),
+                'tz' => array('num', false, -14, 14),
+                'lang' => array('match', false, '#^[a-z_\-]{2,}$#i'),
                     ));
-                    if (strlen($cccp_erep_reg_key) != 32)
-                    {
-                        $error[] = $user->lang['CCCP_EREP_REG_ERROR'];
-                    }
-                    if (!check_form_key('ucp_register'))
-                    {
-                            $error[] = $user->lang['FORM_INVALID'];
-                    }
+            if (strlen($cccp_erep_reg_key) != 32) {
+                $error[] = $user->lang['CCCP_EREP_REG_ERROR'];
+            }
+            if (!check_form_key('ucp_register')) {
+                $error[] = $user->lang['FORM_INVALID'];
+            }
 
-                    // Replace "error" strings with their real, localised form
-                    $error = preg_replace('#^([A-Z_]+)$#e', "(!empty(\$user->lang['\\1'])) ? \$user->lang['\\1'] : '\\1'", $error);
+            // Replace "error" strings with their real, localised form
+            $error = preg_replace('#^([A-Z_]+)$#e', "(!empty(\$user->lang['\\1'])) ? \$user->lang['\\1'] : '\\1'", $error);
 
-                    if ($config['enable_confirm'])
-                    {
-                            $vc_response = $captcha->validate($data);
-                            if ($vc_response !== false)
-                            {
-                                    $error[] = $vc_response;
-                            }
+            if ($config['enable_confirm']) {
+                $vc_response = $captcha->validate($data);
+                if ($vc_response !== false) {
+                    $error[] = $vc_response;
+                }
 
-                            if ($config['max_reg_attempts'] && $captcha->get_attempt_count() > $config['max_reg_attempts'])
-                            {
-                                    $error[] = $user->lang['TOO_MANY_REGISTERS'];
-                            }
-                    }
+                if ($config['max_reg_attempts'] && $captcha->get_attempt_count() > $config['max_reg_attempts']) {
+                    $error[] = $user->lang['TOO_MANY_REGISTERS'];
+                }
+            }
 
-                    // DNSBL check
-                    if ($config['check_dnsbl'])
-                    {
-                            if (($dnsbl = $user->check_dnsbl('register')) !== false)
-                            {
-                                    $error[] = sprintf($user->lang['IP_BLACKLISTED'], $user->ip, $dnsbl[1]);
-                            }
-                    }
+            // DNSBL check
+            if ($config['check_dnsbl']) {
+                if (($dnsbl = $user->check_dnsbl('register')) !== false) {
+                    $error[] = sprintf($user->lang['IP_BLACKLISTED'], $user->ip, $dnsbl[1]);
+                }
+            }
 
-                    // validate custom profile fields
-                    $cp->submit_cp_field('register', $user->get_iso_lang_id(), $cp_data, $error);
+            // validate custom profile fields
+            $cp->submit_cp_field('register', $user->get_iso_lang_id(), $cp_data, $error);
 
-                    if (!sizeof($error))
-                    {
-                            if ($data['new_password'] != $data['password_confirm'])
-                            {
-                                    $error[] = $user->lang['NEW_PASSWORD_ERROR'];
-                            }
+            if (!sizeof($error)) {
+                if ($data['new_password'] != $data['password_confirm']) {
+                    $error[] = $user->lang['NEW_PASSWORD_ERROR'];
+                }
 
-                            if ($data['email'] != $data['email_confirm'])
-                            {
-                                    $error[] = $user->lang['NEW_EMAIL_ERROR'];
-                            }
-                    }
+                if ($data['email'] != $data['email_confirm']) {
+                    $error[] = $user->lang['NEW_EMAIL_ERROR'];
+                }
+            }
 
-                    if (!sizeof($error))
-                    {
-                            $server_url = generate_board_url();
+            if (!sizeof($error)) {
+                $server_url = generate_board_url();
 
-                            // Which group by default?
-                            $group_name = ($coppa) ? 'REGISTERED_COPPA' : 'REGISTERED';
+                // Which group by default?
+                $group_name = ($coppa) ? 'REGISTERED_COPPA' : 'REGISTERED';
 
-                            $sql = 'SELECT group_id
+                $sql = 'SELECT group_id
                                     FROM ' . GROUPS_TABLE . "
                                     WHERE group_name = '" . $db->sql_escape($group_name) . "'
                                             AND group_type = " . GROUP_SPECIAL;
-                            $result = $db->sql_query($sql);
-                            $row = $db->sql_fetchrow($result);
-                            $db->sql_freeresult($result);
+                $result = $db->sql_query($sql);
+                $row = $db->sql_fetchrow($result);
+                $db->sql_freeresult($result);
 
-                            if (!$row)
-                            {
-                                    trigger_error('NO_GROUP');
-                            }
+                if (!$row) {
+                    trigger_error('NO_GROUP');
+                }
 
-                            $group_id = $row['group_id'];
+                $group_id = $row['group_id'];
 
-                            if (($coppa ||
-                                    $config['require_activation'] == USER_ACTIVATION_SELF ||
-                                    $config['require_activation'] == USER_ACTIVATION_ADMIN) && $config['email_enable'])
-                            {
-                                    $user_actkey = gen_rand_string(10);
-                                    $key_len = 54 - (strlen($server_url));
-                                    $key_len = ($key_len < 6) ? 6 : $key_len;
-                                    $user_actkey = substr($user_actkey, 0, $key_len);
+                if (($coppa ||
+                        $config['require_activation'] == USER_ACTIVATION_SELF ||
+                        $config['require_activation'] == USER_ACTIVATION_ADMIN) && $config['email_enable']) {
+                    $user_actkey = gen_rand_string(10);
+                    $key_len = 54 - (strlen($server_url));
+                    $key_len = ($key_len < 6) ? 6 : $key_len;
+                    $user_actkey = substr($user_actkey, 0, $key_len);
 
-                                    $user_type = USER_INACTIVE;
-                                    $user_inactive_reason = INACTIVE_REGISTER;
-                                    $user_inactive_time = time();
-                            }
-                            else
-                            {
-                                    $user_type = USER_NORMAL;
-                                    $user_actkey = '';
-                                    $user_inactive_reason = 0;
-                                    $user_inactive_time = 0;
-                            }
+                    $user_type = USER_INACTIVE;
+                    $user_inactive_reason = INACTIVE_REGISTER;
+                    $user_inactive_time = time();
+                } else {
+                    $user_type = USER_NORMAL;
+                    $user_actkey = '';
+                    $user_inactive_reason = 0;
+                    $user_inactive_time = 0;
+                }
 
-                            $user_row = array(
-                                    'user_password'            => phpbb_hash($data['new_password']),
-                                    'user_email'            => $data['email'],
-                                    'group_id'                => (int) $group_id,
-                                    'user_timezone'            => (float) $data['tz'],
-                                    'user_dst'                => $is_dst,
-                                    'user_lang'                => $data['lang'],
-                                    'user_type'                => $user_type,
-                                    'user_actkey'            => $user_actkey,
-                                    'user_ip'                => $user->ip,
-                                    'user_regdate'            => time(),
-                                    'user_inactive_reason'              => $user_inactive_reason,
-                                    'user_inactive_time'    => $user_inactive_time,
-                                    'cccp_erep_activation'  => $cccp_erep_reg_key,
-                                    'timestamp' => time(),
-                                    'new_password' => $data['new_password']
-                            );
+                $user_row = array(
+                    'user_password' => phpbb_hash($data['new_password']),
+                    'user_email' => $data['email'],
+                    'group_id' => (int) $group_id,
+                    'user_timezone' => (float) $data['tz'],
+                    'user_dst' => $is_dst,
+                    'user_lang' => $data['lang'],
+                    'user_type' => $user_type,
+                    'user_actkey' => $user_actkey,
+                    'user_ip' => $user->ip,
+                    'user_regdate' => time(),
+                    'user_inactive_reason' => $user_inactive_reason,
+                    'user_inactive_time' => $user_inactive_time,
+                    'cccp_erep_activation' => $cccp_erep_reg_key,
+                    'timestamp' => time(),
+                    'new_password' => $data['new_password']
+                );
 
-                            if (array_key_exists('new_member_post_limit', $config) && $config['new_member_post_limit'] == true)
-                            {
-                                    $user_row['user_new'] = 1;
-                            }
+                if (array_key_exists('new_member_post_limit', $config) && $config['new_member_post_limit'] == true) {
+                    $user_row['user_new'] = 1;
+                }
 
-                            $timeout = time() - 600;
+                $timeout = time() - 600;
 
-                            $sql = 'DELETE FROM ' . CCCP_EREP_REGISTRATION_TABLE . " WHERE timestamp < $timeout OR user_email = '". $db->sql_escape($user_row['user_email']) ."'";
-                            $db->sql_query($sql);
+                $sql = 'DELETE FROM ' . CCCP_EREP_REGISTRATION_TABLE . " WHERE timestamp < $timeout OR user_email = '" . $db->sql_escape($user_row['user_email']) . "'";
+                $db->sql_query($sql);
 
-                            $sql = 'INSERT INTO ' . CCCP_EREP_REGISTRATION_TABLE . ' ' . $db->sql_build_array('INSERT', $user_row);
-                            $db->sql_query($sql);
-                            try {
-                                $erep = new erep_api(erep_api_config::$consumer_key, erep_api_config::$consumer_secret);
-                                $erep->set_callback(generate_board_url(false) . '/register_erepublik.php');
-                                $token = $erep->request_access('citizen/info');
-                                $stripped_token = explode('=', $token);
-								$sql = 'UPDATE ' . CCCP_EREP_REGISTRATION_TABLE . "
-									SET cccp_erep_token = '". $db->sql_escape($stripped_token[1]) ."'
-									WHERE cccp_erep_activation = '". $db->sql_escape($cccp_erep_reg_key) ."'";
-								$db->sql_query($sql);
-                                $template->assign_vars(array(
-                                        'TOKEN'    => $token,
-                                        'EREP_LOGIN_TEXT' => $user->lang['EREP_LOGIN_TEXT'],
-                                ));
-                            } catch (Exception $e) {
-                                echo $e;die();
-                                trigger_error($user->lang['CCCP_EREP_API_ERROR']);
-                            }
-                            $template->assign_vars(array(
-                                    'CCCP_EREP_REGISTRATION'    => $cccp_erep_reg_key,
-                            ));
-                            $this->tpl_name = 'cccp_register_erepublik';
-                            return;
-                    }
+                $sql = 'INSERT INTO ' . CCCP_EREP_REGISTRATION_TABLE . ' ' . $db->sql_build_array('INSERT', $user_row);
+                $db->sql_query($sql);
+                try {
+                    $erep = new erep_api(erep_api_config::$consumer_key, erep_api_config::$consumer_secret);
+                    $erep->set_callback(generate_board_url(false) . '/register_erepublik.php');
+                    $token = $erep->request_access('citizen/info');
+                    $stripped_token = explode('=', $token);
+                    $sql = 'UPDATE ' . CCCP_EREP_REGISTRATION_TABLE . "
+									SET cccp_erep_token = '" . $db->sql_escape($stripped_token[1]) . "'
+									WHERE cccp_erep_activation = '" . $db->sql_escape($cccp_erep_reg_key) . "'";
+                    $db->sql_query($sql);
+                    $template->assign_vars(array(
+                        'TOKEN' => $token,
+                        'EREP_LOGIN_TEXT' => $user->lang['EREP_LOGIN_TEXT'],
+                    ));
+                } catch (Exception $e) {
+                    echo $e;
+                    die();
+                    trigger_error($user->lang['CCCP_EREP_API_ERROR']);
+                }
+                $template->assign_vars(array(
+                    'CCCP_EREP_REGISTRATION' => $cccp_erep_reg_key,
+                ));
+                $this->tpl_name = 'cccp_register_erepublik';
+                return;
+            }
         }
         $s_hidden_fields = array(
-            'agreed'        => 'true',
-            'change_lang'    => 0,
+            'agreed' => 'true',
+            'change_lang' => 0,
         );
 
-        if ($config['coppa_enable'])
-        {
+        if ($config['coppa_enable']) {
             $s_hidden_fields['coppa'] = $coppa;
         }
 
-        if ($config['enable_confirm'])
-        {
+        if ($config['enable_confirm']) {
             $s_hidden_fields = array_merge($s_hidden_fields, $captcha->get_hidden_fields());
         }
         $s_hidden_fields = build_hidden_fields($s_hidden_fields);
         $confirm_image = '';
 
         // Visual Confirmation - Show images
-        if ($config['enable_confirm'])
-        {
+        if ($config['enable_confirm']) {
             $template->assign_vars(array(
-                'CAPTCHA_TEMPLATE'        => $captcha->get_template(),
+                'CAPTCHA_TEMPLATE' => $captcha->get_template(),
             ));
         }
 
         //
         $l_reg_cond = '';
-        switch ($config['require_activation'])
-        {
+        switch ($config['require_activation']) {
             case USER_ACTIVATION_SELF:
                 $l_reg_cond = $user->lang['UCP_EMAIL_ACTIVATE'];
-            break;
+                break;
 
             case USER_ACTIVATION_ADMIN:
                 $l_reg_cond = $user->lang['UCP_ADMIN_ACTIVATE'];
-            break;
+                break;
         }
 
         $template->assign_vars(array(
-            'ERROR'                => (sizeof($error)) ? implode('<br />', $error) : '',
-            'PASSWORD'            => $data['new_password'],
-            'PASSWORD_CONFIRM'    => $data['password_confirm'],
-            'EMAIL'                => $data['email'],
-            'EMAIL_CONFIRM'        => $data['email_confirm'],
-
-            'L_REG_COND'                => $l_reg_cond,
-            'L_PASSWORD_EXPLAIN'        => sprintf($user->lang[$config['pass_complex'] . '_EXPLAIN'], $config['min_pass_chars'], $config['max_pass_chars']),
-
-            'S_LANG_OPTIONS'    => language_select($data['lang']),
-            'S_TZ_OPTIONS'        => tz_select($data['tz']),
-            'S_CONFIRM_REFRESH'    => ($config['enable_confirm'] && $config['confirm_refresh']) ? true : false,
-            'S_REGISTRATION'    => true,
-            'S_COPPA'            => $coppa,
-            'S_HIDDEN_FIELDS'    => $s_hidden_fields,
-            'S_UCP_ACTION'        => append_sid("{$phpbb_root_path}ucp.$phpEx", 'mode=register'),
+            'ERROR' => (sizeof($error)) ? implode('<br />', $error) : '',
+            'PASSWORD' => $data['new_password'],
+            'PASSWORD_CONFIRM' => $data['password_confirm'],
+            'EMAIL' => $data['email'],
+            'EMAIL_CONFIRM' => $data['email_confirm'],
+            'L_REG_COND' => $l_reg_cond,
+            'L_PASSWORD_EXPLAIN' => sprintf($user->lang[$config['pass_complex'] . '_EXPLAIN'], $config['min_pass_chars'], $config['max_pass_chars']),
+            'S_LANG_OPTIONS' => language_select($data['lang']),
+            'S_TZ_OPTIONS' => tz_select($data['tz']),
+            'S_CONFIRM_REFRESH' => ($config['enable_confirm'] && $config['confirm_refresh']) ? true : false,
+            'S_REGISTRATION' => true,
+            'S_COPPA' => $coppa,
+            'S_HIDDEN_FIELDS' => $s_hidden_fields,
+            'S_UCP_ACTION' => append_sid("{$phpbb_root_path}ucp.$phpEx", 'mode=register'),
         ));
 
         $user->profile_fields = array();
@@ -425,7 +377,7 @@ class cccp_register
         $cp->generate_profile_fields('register', $user->get_iso_lang_id());
 
         $template->assign_vars(array(
-            'CCCP_EREP_REGISTRATION'    => $user->lang['CCCP_EREP_REGISTRATION'],
+            'CCCP_EREP_REGISTRATION' => $user->lang['CCCP_EREP_REGISTRATION'],
             'CCCP_EREP_REGISTRATION_HASH' => $cccp_erep_registration,
         ));
 
@@ -433,6 +385,7 @@ class cccp_register
 
         $this->page_title = 'UCP_REGISTRATION';
     }
+
 }
 
 ?>
